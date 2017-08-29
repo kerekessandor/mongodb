@@ -1,66 +1,29 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const bodyParse = require('body-parser');
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/TodoApp');
-
-var Todo = mongoose.model('Todo',
-    {
-        text: {
-            type: String,
-            required: [true, 'todo is missing'],
-            minLength: 1,
-            trim: true
-        },
-        completed: {
-            type: Boolean,
-            default: false
-        },
-        completedAt: {
-            type: Number,
-            default: null
-        }
-    }
-);
-
-// var newTodo = new Todo({
-//     text: 'Cook dinner'
-// });
-
-// newTodo.save().then(function (res){
-//     console.log('Saved todo', res);
-// }, function (error) {
-//     console.log('Unable to save todo');
-// });
+const mongoose = require('./db/mongoose');
+var Todo = require('./models/todo');
+var User = require('./models/user');
 
 
-// var otherTodo = new Todo({
-//     text: '               ez egy proba                 '
-// });
+var app = express();
 
-// otherTodo.save().then(function (res) {
-//     console.log(res);
-// }, function (error) {
-//     console.log(JSON.stringify(error.errors.text.message, undefined, 2));
-// });
+app.use(bodyParse.json());
 
-//User model {email, password}
-//email - requiered, trim, string, min length - 1
+app.post('/todos', function (request, response) {
+    var todo = new Todo.Todo({
+        text: request.body.text,
+        completed: request.body.completed
+    })
 
-var User = mongoose.model('User', {
-    email: {
-        type: String,
-        required: [ true, 'Email address is required' ],
-        minLength: 1,
-        trim: true
-    }
+    todo.save().then(function (res) {
+        response.send(res);
+    }, function (error) {
+        response.status(400);
+        response.send(error);
+    })
 });
 
-var newUser = new User({
-    email: 'kerekessandor@yahoo.com'
-});
-
-newUser.save().then(function (res) {
-    console.log(res);
-}, function (error) {
-    console.log(JSON.stringify(error.message, undefined, 2));
+app.listen(5000, function () {
+    console.log('App started on port 3000');
 });
